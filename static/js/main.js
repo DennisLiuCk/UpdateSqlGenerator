@@ -58,297 +58,373 @@
 
     // --- Event Delegation ---
     function setupEventDelegation() {
-        const container = document.querySelector('.container');
-        if (!container) return;
-        
-        // 處理刪除識別欄位
-        container.addEventListener('click', function(e) {
-            if (e.target.closest('#identifiers-container .remove-btn:not(:disabled)')) {
-                const row = e.target.closest('.identifier-row');
-                if (row && document.querySelectorAll('#identifiers-container .identifier-row').length > 1) {
-                    row.remove();
-                    // 如果只剩下一行，禁用其刪除按鈕
-                    const remainingRows = document.querySelectorAll('#identifiers-container .identifier-row');
-                    if (remainingRows.length === 1) {
-                        const deleteBtn = remainingRows[0].querySelector('.remove-btn');
-                        if (deleteBtn) deleteBtn.disabled = true;
+        try {
+            const container = document.querySelector('.container');
+            if (!container) {
+                console.warn('Event delegation container not found.');
+                return;
+            }
+            
+            container.addEventListener('click', function(e) {
+                try {
+                    if (e.target.closest('#identifiers-container .remove-btn:not(:disabled)')) {
+                        const row = e.target.closest('.identifier-row');
+                        if (row && document.querySelectorAll('#identifiers-container .identifier-row').length > 1) {
+                            row.remove();
+                            const remainingRows = document.querySelectorAll('#identifiers-container .identifier-row');
+                            if (remainingRows.length === 1) {
+                                const deleteBtn = remainingRows[0].querySelector('.remove-btn');
+                                if (deleteBtn) deleteBtn.disabled = true;
+                            }
+                        } else {
+                            Utils.showAlert('至少需要一個識別欄位', 'warning');
+                        }
                     }
-                } else {
-                    alert('至少需要一個識別欄位');
+                    else if (e.target.closest('#update-columns-container .remove-btn:not(:disabled)')) {
+                        const row = e.target.closest('.update-column-row');
+                        if (row) {
+                            row.remove();
+                        }
+                    }
+                    else if (e.target.closest('#static-values-container .remove-btn:not(:disabled)')) {
+                        const row = e.target.closest('.static-value-row');
+                        if (row) {
+                            row.remove();
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error in event delegation click handler:', error);
+                    Utils.showAlert('處理點擊事件時發生錯誤: ' + error.message, 'danger');
                 }
-            }
-            // 處理刪除更新欄位
-            else if (e.target.closest('#update-columns-container .remove-btn:not(:disabled)')) {
-                const row = e.target.closest('.update-column-row');
-                if (row) {
-                    row.remove();
-                }
-            }
-            // 處理刪除靜態值
-            else if (e.target.closest('#static-values-container .remove-btn:not(:disabled)')) {
-                const row = e.target.closest('.static-value-row');
-                if (row) {
-                    row.remove();
-                }
-            }
-        });
+            });
+        } catch (error) {
+            console.error('Error setting up event delegation:', error);
+            Utils.showAlert('設定事件委派時發生錯誤: ' + error.message, 'danger');
+        }
     }
 
     // --- SQL Preview Modal ---
     function initSQLPreview() {
-        // 綁定預覽按鈕點擊事件
-        document.addEventListener('click', function(e) {
-            if (e.target.closest('.view-sql')) {
-                e.preventDefault();
-                const button = e.target.closest('.view-sql');
-                const filename = button.getAttribute('data-filename');
-                showSQLPreview(filename);
+        try {
+            // 綁定預覽按鈕點擊事件
+            document.addEventListener('click', function(e) {
+                try {
+                    if (e.target.closest('.view-sql')) {
+                        e.preventDefault();
+                        const button = e.target.closest('.view-sql');
+                        const filename = button.getAttribute('data-filename');
+                        if (filename) {
+                            showSQLPreview(filename);
+                        } else {
+                            console.warn('View SQL button clicked without a filename.');
+                            Utils.showAlert('無法預覽 SQL：缺少檔案名稱。', 'warning');
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error in SQL preview button click handler:', error);
+                    Utils.showAlert('處理 SQL 預覽按鈕點擊時發生錯誤: ' + error.message, 'danger');
+                }
+            });
+
+            // 綁定複製按鈕點擊事件
+            const copyBtn = document.getElementById('copy-sql');
+            if (copyBtn) {
+                copyBtn.addEventListener('click', function() {
+                    try {
+                        const sqlContent = document.getElementById('sql-content');
+                        if (sqlContent) {
+                            navigator.clipboard.writeText(sqlContent.textContent)
+                                .then(() => {
+                                    const originalText = copyBtn.innerHTML;
+                                    copyBtn.innerHTML = '<i class="fas fa-check me-1"></i> 已複製';
+                                    setTimeout(() => {
+                                        copyBtn.innerHTML = originalText;
+                                    }, 2000);
+                                })
+                                .catch(err => {
+                                    console.error('複製失敗:', err);
+                                    Utils.showAlert('複製 SQL 失敗: ' + err.message, 'warning');
+                                });
+                        } else {
+                            Utils.showAlert('找不到 SQL 內容元素可供複製。', 'warning');
+                        }
+                    } catch (error) {
+                        console.error('Error in copy SQL button click handler:', error);
+                        Utils.showAlert('複製 SQL 時發生錯誤: ' + error.message, 'danger');
+                    }
+                });
             }
-        });
 
-        // 綁定複製按鈕點擊事件
-        const copyBtn = document.getElementById('copy-sql');
-        if (copyBtn) {
-            copyBtn.addEventListener('click', function() {
-                const sqlContent = document.getElementById('sql-content');
-                if (sqlContent) {
-                    navigator.clipboard.writeText(sqlContent.textContent)
-                        .then(() => {
-                            const originalText = copyBtn.innerHTML;
-                            copyBtn.innerHTML = '<i class="fas fa-check me-1"></i> 已複製';
-                            setTimeout(() => {
-                                copyBtn.innerHTML = originalText;
-                            }, 2000);
-                        })
-                        .catch(err => {
-                            console.error('複製失敗:', err);
-                        });
-                }
-            });
-        }
-
-        // 綁定下載按鈕點擊事件
-        const downloadBtn = document.getElementById('download-single');
-        if (downloadBtn) {
-            downloadBtn.addEventListener('click', function(e) {
-                const filename = document.getElementById('sql-filename').textContent;
-                if (filename) {
-                    this.href = `/download/${filename}`;
-                } else {
-                    e.preventDefault();
-                }
-            });
+            // 綁定下載按鈕點擊事件
+            const downloadBtn = document.getElementById('download-single');
+            if (downloadBtn) {
+                downloadBtn.addEventListener('click', function(e) {
+                    try {
+                        const filename = document.getElementById('sql-filename').textContent;
+                        if (filename) {
+                            this.href = `/download/${filename}`;
+                        } else {
+                            e.preventDefault();
+                            Utils.showAlert('無法下載 SQL：缺少檔案名稱。', 'warning');
+                        }
+                    } catch (error) {
+                        console.error('Error in download SQL button click handler:', error);
+                        Utils.showAlert('準備下載 SQL 時發生錯誤: ' + error.message, 'danger');
+                        e.preventDefault();
+                    }
+                });
+            }
+        } catch (error) {
+            console.error('Error initializing SQL preview:', error);
+            Utils.showAlert('初始化 SQL 預覽功能時發生錯誤: ' + error.message, 'danger');
         }
     }
     
     // 顯示 SQL 預覽
     function showSQLPreview(filename) {
-        const modal = new bootstrap.Modal(document.getElementById('sqlPreviewModal'));
-        const sqlFilename = document.getElementById('sql-filename');
-        const sqlContent = document.getElementById('sql-content');
-        const downloadBtn = document.getElementById('download-single');
-        
-        if (!sqlFilename || !sqlContent) return;
-        
-        // 顯示載入中
-        sqlFilename.textContent = filename;
-        sqlContent.textContent = '載入中...';
-        
-        // 設置下載連結
-        if (downloadBtn) {
-            downloadBtn.href = `/download/${filename}`;
+        try {
+            const modalElement = document.getElementById('sqlPreviewModal');
+            if (!modalElement) {
+                Utils.showAlert('找不到 SQL 預覽 Modal。', 'danger');
+                return;
+            }
+            const modal = new bootstrap.Modal(modalElement);
+            const sqlFilename = document.getElementById('sql-filename');
+            const sqlContent = document.getElementById('sql-content');
+            const downloadBtn = document.getElementById('download-single');
+            
+            if (!sqlFilename || !sqlContent) {
+                Utils.showAlert('SQL 預覽 Modal 元件不完整。', 'danger');
+                return;
+            }
+            
+            sqlFilename.textContent = filename;
+            sqlContent.textContent = '載入中...';
+            
+            if (downloadBtn) {
+                downloadBtn.href = `/download/${filename}`;
+            }
+            
+            modal.show();
+            
+            fetch(`/preview/${filename}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`無法載入 SQL 內容 (狀態 ${response.status})`);
+                    }
+                    return response.text();
+                })
+                .then(content => {
+                    sqlContent.textContent = content;
+                    if (window.Prism) {
+                        Prism.highlightElement(sqlContent);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching SQL content:', error);
+                    sqlContent.textContent = `載入 SQL 內容時出錯: ${error.message}`;
+                    Utils.showAlert(`載入 SQL 內容時出錯: ${error.message}`, 'warning');
+                });
+        } catch (error) {
+            console.error('Error in showSQLPreview:', error);
+            Utils.showAlert('顯示 SQL 預覽時發生錯誤: ' + error.message, 'danger');
         }
-        
-        // 顯示 Modal
-        modal.show();
-        
-        // 獲取 SQL 內容
-        fetch(`/preview/${filename}`)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('無法載入 SQL 內容');
-                }
-                return response.text();
-            })
-            .then(content => {
-                sqlContent.textContent = content;
-                // 重新高亮代碼
-                if (window.Prism) {
-                    Prism.highlightElement(sqlContent);
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching SQL content:', error);
-                sqlContent.textContent = `載入 SQL 內容時出錯: ${error.message}`;
-            });
     }
 
     // --- Dynamic Form Row Handling ---
     function addIdentifierRow() {
-        const container = document.getElementById('identifiers-container');
-        if (!container) return;
-        
-        const templateRow = container.querySelector('.identifier-row');
-        if (!templateRow) return;
-        
-        const newRow = templateRow.cloneNode(true);
-        
-        // 清除輸入值
-        newRow.querySelectorAll('input').forEach(input => input.value = '');
-        newRow.querySelectorAll('select').forEach(select => select.selectedIndex = 0);
-        
-        // 移除現有的刪除按鈕列（如果存在）
-        const existingRemoveCol = newRow.querySelector('.remove-col');
-        if (existingRemoveCol) {
-            existingRemoveCol.remove();
-        }
-        
-        // 調整欄位寬度
-        const fields = newRow.querySelectorAll('.col-md-5, .col-md-2');
-        fields.forEach(field => {
-            if (field.classList.contains('col-md-5')) {
-                field.className = 'col-md-4';
-            } else if (field.classList.contains('col-md-2')) {
-                field.className = 'col-md-3';
+        try {
+            const container = document.getElementById('identifiers-container');
+            if (!container) {
+                Utils.showAlert('找不到識別欄位容器。', 'danger');
+                return;
             }
-        });
-        
-        // 創建刪除按鈕列
-        const removeCol = document.createElement('div');
-        removeCol.className = 'col-md-1 d-flex align-items-center remove-col';
-        
-        const removeBtn = document.createElement('button');
-        removeBtn.type = 'button';
-        removeBtn.className = 'btn btn-outline-danger btn-sm remove-btn mt-4';
-        removeBtn.innerHTML = '<i class="fas fa-times"></i>';
-        removeBtn.setAttribute('aria-label', '移除此識別欄位');
-        
-        removeCol.appendChild(removeBtn);
-        newRow.appendChild(removeCol);
-        
-        // 確保行有正確的類
-        newRow.className = 'row g-3 mb-3 align-items-end identifier-row';
-        
-        // 啟用刪除按鈕（如果這是第二行或更多）
-        const rows = container.querySelectorAll('.identifier-row');
-        if (rows.length > 1) {
-            rows[0].querySelector('.remove-btn').disabled = false;
-        }
-        
-        container.appendChild(newRow);
+            
+            const templateRow = container.querySelector('.identifier-row');
+            if (!templateRow) {
+                Utils.showAlert('找不到識別欄位模板。', 'danger');
+                return;
+            }
+            
+            const newRow = templateRow.cloneNode(true);
+            
+            newRow.querySelectorAll('input').forEach(input => input.value = '');
+            newRow.querySelectorAll('select').forEach(select => select.selectedIndex = 0);
+            
+            const existingRemoveCol = newRow.querySelector('.remove-col');
+            if (existingRemoveCol) {
+                existingRemoveCol.remove();
+            }
+            
+            const fields = newRow.querySelectorAll('.col-md-5, .col-md-2');
+            fields.forEach(field => {
+                if (field.classList.contains('col-md-5')) {
+                    field.className = 'col-md-4';
+                } else if (field.classList.contains('col-md-2')) {
+                    field.className = 'col-md-3';
+                }
+            });
+            
+            const removeCol = document.createElement('div');
+            removeCol.className = 'col-md-1 d-flex align-items-center remove-col';
+            
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.className = 'btn btn-outline-danger btn-sm remove-btn mt-4';
+            removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+            removeBtn.setAttribute('aria-label', '移除此識別欄位');
+            
+            removeCol.appendChild(removeBtn);
+            newRow.appendChild(removeCol);
+            
+            newRow.className = 'row g-3 mb-3 align-items-end identifier-row';
+            
+            // Enable delete button on the first row if it was previously disabled
+            const firstRow = container.querySelector('.identifier-row');
+            if (firstRow) {
+                const firstRowDeleteBtn = firstRow.querySelector('.remove-btn');
+                if (firstRowDeleteBtn && firstRowDeleteBtn.disabled) {
+                    firstRowDeleteBtn.disabled = false;
+                }
+            }
+            
+            container.appendChild(newRow);
 
-        // Announce row addition
-        const announcementSpan = document.getElementById('dynamic-row-announcement');
-        if (announcementSpan) {
-            announcementSpan.textContent = '已新增一個識別欄位列。';
-            setTimeout(() => { announcementSpan.textContent = ''; }, 3000); // Clear after a few seconds
+            const announcementSpan = document.getElementById('dynamic-row-announcement');
+            if (announcementSpan) {
+                announcementSpan.textContent = '已新增一個識別欄位列。';
+                setTimeout(() => { announcementSpan.textContent = ''; }, 3000);
+            }
+        } catch (error) {
+            console.error('Error adding identifier row:', error);
+            Utils.showAlert('新增識別欄位時發生錯誤: ' + error.message, 'danger');
         }
     }
 
-    // 添加更新欄位行
     function addUpdateColumnRow() {
-        const container = document.getElementById('update-columns-container');
-        if (!container) return;
-        
-        const templateRow = container.querySelector('.update-column-row');
-        if (!templateRow) return;
-        
-        const newRow = templateRow.cloneNode(true);
-        
-        // 清除輸入值
-        newRow.querySelectorAll('input').forEach(input => input.value = '');
-        newRow.querySelectorAll('select').forEach(select => select.selectedIndex = 0);
-        
-        // 移除現有的刪除按鈕列（如果存在）
-        const existingRemoveCol = newRow.querySelector('.remove-col');
-        if (existingRemoveCol) {
-            existingRemoveCol.remove();
-        }
-        
-        // 調整欄位寬度
-        const fields = newRow.querySelectorAll('.col-md-5, .col-md-2');
-        fields.forEach(field => {
-            if (field.classList.contains('col-md-5')) {
-                field.className = 'col-md-4';
-            } else if (field.classList.contains('col-md-2')) {
-                field.className = 'col-md-3';
+        try {
+            const container = document.getElementById('update-columns-container');
+            if (!container) {
+                Utils.showAlert('找不到更新欄位容器。', 'danger');
+                return;
             }
-        });
-        
-        // 創建刪除按鈕列
-        const removeCol = document.createElement('div');
-        removeCol.className = 'col-md-1 d-flex align-items-center remove-col';
-        
-        const removeBtn = document.createElement('button');
-        removeBtn.type = 'button';
-        removeBtn.className = 'btn btn-outline-danger btn-sm remove-btn mt-4';
-        removeBtn.innerHTML = '<i class="fas fa-times"></i>';
-        removeBtn.setAttribute('aria-label', '移除此更新欄位');
-        
-        removeCol.appendChild(removeBtn);
-        newRow.appendChild(removeCol);
-        
-        // 確保行有正確的類
-        newRow.className = 'row g-3 mb-3 align-items-end update-column-row';
-        
-        container.appendChild(newRow);
+            
+            const templateRow = container.querySelector('.update-column-row');
+            if (!templateRow) {
+                Utils.showAlert('找不到更新欄位模板。', 'danger');
+                return;
+            }
+            
+            const newRow = templateRow.cloneNode(true);
+            
+            newRow.querySelectorAll('input').forEach(input => input.value = '');
+            newRow.querySelectorAll('select').forEach(select => select.selectedIndex = 0);
+            
+            const existingRemoveCol = newRow.querySelector('.remove-col');
+            if (existingRemoveCol) {
+                existingRemoveCol.remove();
+            }
+            
+            const fields = newRow.querySelectorAll('.col-md-5, .col-md-2');
+            fields.forEach(field => {
+                if (field.classList.contains('col-md-5')) {
+                    field.className = 'col-md-4';
+                } else if (field.classList.contains('col-md-2')) {
+                    field.className = 'col-md-3';
+                }
+            });
+            
+            const removeCol = document.createElement('div');
+            removeCol.className = 'col-md-1 d-flex align-items-center remove-col';
+            
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.className = 'btn btn-outline-danger btn-sm remove-btn mt-4';
+            removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+            removeBtn.setAttribute('aria-label', '移除此更新欄位');
+            
+            removeCol.appendChild(removeBtn);
+            newRow.appendChild(removeCol);
+            
+            newRow.className = 'row g-3 mb-3 align-items-end update-column-row';
+            
+            container.appendChild(newRow);
 
-        // Announce row addition
-        const announcementSpan = document.getElementById('dynamic-row-announcement');
-        if (announcementSpan) {
-            announcementSpan.textContent = '已新增一個更新欄位列。';
-            setTimeout(() => { announcementSpan.textContent = ''; }, 3000);
+            const announcementSpan = document.getElementById('dynamic-row-announcement');
+            if (announcementSpan) {
+                announcementSpan.textContent = '已新增一個更新欄位列。';
+                setTimeout(() => { announcementSpan.textContent = ''; }, 3000);
+            }
+        } catch (error) {
+            console.error('Error adding update column row:', error);
+            Utils.showAlert('新增更新欄位時發生錯誤: ' + error.message, 'danger');
         }
     }
 
-    // 添加靜態值行
     function addStaticValueRow() {
-        const container = document.getElementById('static-values-container');
-        if (!container) return;
-        
-        const templateRow = container.querySelector('.static-value-row');
-        if (!templateRow) return;
-        
-        const newRow = templateRow.cloneNode(true);
-        
-        // 清除輸入值
-        newRow.querySelectorAll('input').forEach(input => input.value = '');
-        
-        // 移除現有的刪除按鈕列（如果存在）
-        const existingRemoveCol = newRow.querySelector('.remove-col');
-        if (existingRemoveCol) {
-            existingRemoveCol.remove();
-        }
-        
-        // 調整欄位寬度
-        const fields = newRow.querySelectorAll('.col-md-5');
-        fields.forEach(field => {
-            field.className = 'col-md-5';
-        });
-        
-        // 創建刪除按鈕列
-        const removeCol = document.createElement('div');
-        removeCol.className = 'col-md-2 d-flex align-items-center remove-col';
-        
-        const removeBtn = document.createElement('button');
-        removeBtn.type = 'button';
-        removeBtn.className = 'btn btn-outline-danger btn-sm remove-btn mt-4';
-        removeBtn.innerHTML = '<i class="fas fa-times"></i>';
-        removeBtn.setAttribute('aria-label', '移除此靜態值');
-        
-        removeCol.appendChild(removeBtn);
-        newRow.appendChild(removeCol);
-        
-        // 確保行有正確的類
-        newRow.className = 'row g-3 mb-3 align-items-end static-value-row';
-        
-        container.appendChild(newRow);
+        try {
+            const container = document.getElementById('static-values-container');
+            if (!container) {
+                Utils.showAlert('找不到靜態值容器。', 'danger');
+                return;
+            }
+            
+            const templateRow = container.querySelector('.static-value-row');
+            if (!templateRow) {
+                Utils.showAlert('找不到靜態值模板。', 'danger');
+                return;
+            }
+            
+            const newRow = templateRow.cloneNode(true);
+            
+            newRow.querySelectorAll('input').forEach(input => input.value = '');
+            
+            const existingRemoveCol = newRow.querySelector('.remove-col');
+            if (existingRemoveCol) {
+                existingRemoveCol.remove();
+            }
+            
+            // Fields in static value rows are .col-md-5, so no need to change them to col-md-4 like others.
+            // However, ensure the remove button is added correctly.
+            // The template for static value rows already has a remove button structure,
+            // so cloning should preserve it. We just need to ensure it's enabled.
+            const removeBtnInClone = newRow.querySelector('.remove-btn');
+            if (removeBtnInClone) {
+                 removeBtnInClone.disabled = false; // Ensure it's enabled
+            } else {
+                // If template somehow lacks a remove button column, create it
+                const removeCol = document.createElement('div');
+                removeCol.className = 'col-md-2 d-flex align-items-center remove-col justify-content-end'; // Matched class from template
+                
+                const removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.className = 'btn btn-outline-danger btn-sm remove-btn mt-0'; // mt-0 as per template
+                removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+                removeBtn.setAttribute('aria-label', '移除此靜態值');
+                
+                removeCol.appendChild(removeBtn);
+                // Append to the row, assuming the row is a direct flex container or similar
+                // Or find the last column and insert before/after
+                const lastCol = newRow.querySelector('.col-5:last-of-type');
+                if (lastCol && lastCol.parentNode === newRow) {
+                    lastCol.parentNode.insertBefore(removeCol, lastCol.nextSibling);
+                } else {
+                     newRow.appendChild(removeCol); // Fallback
+                }
+            }
+            
+            newRow.className = 'row g-2 mb-3 align-items-center static-value-row'; // g-2 as per template
+            
+            container.appendChild(newRow);
 
-        // Announce row addition
-        const announcementSpan = document.getElementById('dynamic-row-announcement');
-        if (announcementSpan) {
-            announcementSpan.textContent = '已新增一個靜態值列。';
-            setTimeout(() => { announcementSpan.textContent = ''; }, 3000);
+            const announcementSpan = document.getElementById('dynamic-row-announcement');
+            if (announcementSpan) {
+                announcementSpan.textContent = '已新增一個靜態值列。';
+                setTimeout(() => { announcementSpan.textContent = ''; }, 3000);
+            }
+        } catch (error) {
+            console.error('Error adding static value row:', error);
+            Utils.showAlert('新增靜態值時發生錯誤: ' + error.message, 'danger');
         }
     }
 
@@ -545,38 +621,48 @@
 
     // --- Initialization ---
     function init() {
-        // 設置事件委託
-        setupEventDelegation();
-        
-        // 添加識別欄位按鈕事件監聽
-        const addIdentifierBtn = document.getElementById('add-identifier');
-        if (addIdentifierBtn) {
-            addIdentifierBtn.addEventListener('click', addIdentifierRow);
+        try {
+            // 設置事件委託
+            setupEventDelegation(); // Already has try-catch
+            
+            // 添加識別欄位按鈕事件監聽
+            const addIdentifierBtn = document.getElementById('add-identifier');
+            if (addIdentifierBtn) {
+                addIdentifierBtn.addEventListener('click', addIdentifierRow); // addIdentifierRow has try-catch
+            }
+            
+            // 添加更新欄位按鈕事件監聽
+            const addUpdateColumnBtn = document.getElementById('add-update-column');
+            if (addUpdateColumnBtn) {
+                addUpdateColumnBtn.addEventListener('click', addUpdateColumnRow); // addUpdateColumnRow has try-catch
+            }
+            
+            // 添加靜態值按鈕事件監聽
+            const addStaticValueBtn = document.getElementById('add-static-value');
+            if (addStaticValueBtn) {
+                addStaticValueBtn.addEventListener('click', addStaticValueRow); // addStaticValueRow has try-catch
+            }
+            
+            // 添加生成SQL按鈕事件監聽
+            const generateSQLBtn = document.getElementById('generate-btn');
+            if (generateSQLBtn) {
+                generateSQLBtn.addEventListener('click', function(e) {
+                    try {
+                        e.preventDefault();
+                        handleGenerateSQL(); // handleGenerateSQL has try-catch
+                    } catch (error) {
+                        console.error('Error in generate SQL button click handler:', error);
+                        Utils.showAlert('處理生成 SQL 按鈕點擊時發生錯誤: ' + error.message, 'danger');
+                    }
+                });
+            }
+            
+            // 初始化檔案上傳相關事件
+            initFileUpload(); // This function handles elements on index.html, ensure it has error handling or is robust
+        } catch (error) {
+            console.error('Error during page initialization:', error);
+            Utils.showAlert('頁面初始化過程中發生錯誤: ' + error.message, 'danger');
         }
-        
-        // 添加更新欄位按鈕事件監聽
-        const addUpdateColumnBtn = document.getElementById('add-update-column');
-        if (addUpdateColumnBtn) {
-            addUpdateColumnBtn.addEventListener('click', addUpdateColumnRow);
-        }
-        
-        // 添加靜態值按鈕事件監聽
-        const addStaticValueBtn = document.getElementById('add-static-value');
-        if (addStaticValueBtn) {
-            addStaticValueBtn.addEventListener('click', addStaticValueRow);
-        }
-        
-        // 添加生成SQL按鈕事件監聽
-        const generateSQLBtn = document.getElementById('generate-btn');
-        if (generateSQLBtn) {
-            generateSQLBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                handleGenerateSQL(); // This function will be defined below or should exist
-            });
-        }
-        
-        // 初始化檔案上傳相關事件
-        initFileUpload();
     }
 
     // --- Initialization ---
