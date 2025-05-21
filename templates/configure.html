@@ -12,6 +12,7 @@
             </div>
             <div class="card-body">
                 <form id="config-form" action="{{ url_for('generate_sql') }}" method="POST" novalidate>
+                    <span id="dynamic-row-announcement" class="visually-hidden" role="status" aria-live="polite"></span>
                     <div class="row mb-4">
                         <div class="col-md-6">
                             <h5><i class="fas fa-database me-2"></i>資料庫設定</h5>
@@ -68,10 +69,10 @@
                                 <!-- 識別欄位將動態添加在這裡 -->
                                 <div class="row g-3 mb-3 align-items-end identifier-row">
                                     <div class="col-md-4">
-                                        <input type="text" class="form-control db-column" placeholder="資料庫欄位名稱" required>
+                                        <input type="text" class="form-control db-column" placeholder="資料庫欄位名稱" required aria-label="資料庫欄位名稱">
                                     </div>
                                     <div class="col-md-4">
-                                        <select class="form-select file-column" required>
+                                        <select class="form-select file-column" required aria-label="檔案欄位">
                                             <option value="">-- 選擇檔案欄位 --</option>
                                             {% for header in headers %}
                                             <option value="{{ header }}">{{ header }}</option>
@@ -79,7 +80,7 @@
                                         </select>
                                     </div>
                                     <div class="col-md-4">
-                                        <select class="form-select data-type">
+                                        <select class="form-select data-type" aria-label="資料類型">
                                             <option value="string">字串 (VARCHAR)</option>
                                             <option value="number" selected>數字 (INT, DECIMAL)</option>
                                             <option value="date">日期 (DATE)</option>
@@ -104,10 +105,10 @@
                                 <!-- 更新欄位將動態添加在這裡 -->
                                 <div class="row g-3 mb-3 align-items-end update-column-row">
                                     <div class="col-md-4">
-                                        <input type="text" class="form-control db-column" placeholder="資料庫欄位名稱" required>
+                                        <input type="text" class="form-control db-column" placeholder="資料庫欄位名稱" required aria-label="資料庫欄位名稱">
                                     </div>
                                     <div class="col-md-4">
-                                        <select class="form-select file-column" required>
+                                        <select class="form-select file-column" required aria-label="檔案欄位">
                                             <option value="">-- 選擇檔案欄位 --</option>
                                             {% for header in headers %}
                                             <option value="{{ header }}">{{ header }}</option>
@@ -115,7 +116,7 @@
                                         </select>
                                     </div>
                                     <div class="col-md-4">
-                                        <select class="form-select data-type">
+                                        <select class="form-select data-type" aria-label="資料類型">
                                             <option value="string" selected>字串 (VARCHAR)</option>
                                             <option value="number">數字 (INT, DECIMAL)</option>
                                             <option value="date">日期 (DATE)</option>
@@ -140,13 +141,13 @@
                                 <!-- 靜態值將動態添加在這裡 -->
                                 <div class="row g-2 mb-3 align-items-center static-value-row">
                                     <div class="col-5">
-                                        <input type="text" class="form-control form-control-sm field-name" placeholder="欄位名稱 (例如: LAST_UPDATED_BY)">
+                                        <input type="text" class="form-control form-control-sm field-name" placeholder="欄位名稱 (例如: LAST_UPDATED_BY)" aria-label="靜態值欄位名稱">
                                     </div>
                                     <div class="col-5">
-                                        <input type="text" class="form-control form-control-sm field-value" placeholder="值 (例如: SYSTEM)">
+                                        <input type="text" class="form-control form-control-sm field-value" placeholder="值 (例如: SYSTEM)" aria-label="靜態值">
                                     </div>
                                     <div class="col-2 d-flex align-items-center justify-content-end">
-                                        <button type="button" class="btn btn-outline-danger btn-sm remove-btn">
+                                        <button type="button" class="btn btn-outline-danger btn-sm remove-btn" aria-label="移除此靜態值">
                                             <i class="fas fa-times"></i>
                                         </button>
                                     </div>
@@ -154,13 +155,13 @@
                                 
                                 <div class="row g-2 mb-3 align-items-center static-value-row">
                                     <div class="col-5">
-                                        <input type="text" class="form-control form-control-sm field-name" value="LAST_UPDATED_DATE">
+                                        <input type="text" class="form-control form-control-sm field-name" value="LAST_UPDATED_DATE" aria-label="靜態值欄位名稱">
                                     </div>
                                     <div class="col-5">
-                                        <input type="text" class="form-control form-control-sm field-value" value="NOW()">
+                                        <input type="text" class="form-control form-control-sm field-value" value="NOW()" aria-label="靜態值">
                                     </div>
                                     <div class="col-2 d-flex align-items-center justify-content-end">
-                                        <button type="button" class="btn btn-outline-danger btn-sm remove-btn">
+                                        <button type="button" class="btn btn-outline-danger btn-sm remove-btn" aria-label="移除此靜態值">
                                             <i class="fas fa-times"></i>
                                         </button>
                                     </div>

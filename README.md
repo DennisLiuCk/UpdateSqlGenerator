@@ -198,6 +198,21 @@ static_values:
   # STATUS: 'ACTIVE'
 ```
 
+## 生產環境部署 (Production Deployment)
+
+在將此工具部署到生產環境時，建議對靜態資源（CSS 和 JavaScript 檔案）進行優化以提高載入效能。
+
+### 資源最小化 (Minification)
+
+將 `static/css/style.css` 和 `static/js/main.js` 等檔案進行最小化處理，可以顯著減少檔案大小，從而加快頁面載入速度並減少頻寬消耗。
+
+您可以使用各種常見的網頁開發工具來完成最小化任務，例如：
+*   **JavaScript:** Terser, UglifyJS
+*   **CSS:** cssnano, csso
+*   **整合建置工具:** Webpack, Parcel 等，它們通常包含或可以整合這些最小化工具。
+
+---
+
 ## 範例
 
 ### 輸入檔案範例 (TSV)
