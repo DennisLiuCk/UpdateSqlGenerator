@@ -1,22 +1,22 @@
-/* Basic reset and base styles */
+/* Base Styles */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     line-height: 1.6;
     color: #333;
-    background-color: #f8f9fa;
+    background-color: #f8f9fa; /* Bootstrap Override: Standard background color */
     margin: 0;
     padding: 0;
 }
 
-/* Container */
+/* Layout specific (if any beyond Bootstrap's grid) */
 .container {
-    max-width: 1200px;
+    max-width: 1200px; /* Bootstrap Override: Custom max-width */
     margin: 0 auto;
-    padding: 20px;
+    padding: 20px; /* Bootstrap Override: Custom padding */
 }
 
-/* Header */
-.header {
+/* Bootstrap Component Overrides (if any retained) */
+.header { /* This is a custom component, not a direct Bootstrap override */
     background-color: #343a40;
     color: white;
     padding: 1rem 0;
@@ -29,157 +29,149 @@ body {
     font-size: 1.8rem;
 }
 
-/* Cards */
+/* .card, .card-header, .card-body are very close to Bootstrap defaults.
+   Consider removing if no significant customization is intended.
+   If customized, add specific "Bootstrap Override" comments. */
 .card {
-    border: 1px solid #dee2e6;
-    border-radius: 0.25rem;
-    margin-bottom: 1.5rem;
+    border: 1px solid #dee2e6; /* Bootstrap Default: Standard card border */
+    border-radius: 0.25rem; /* Bootstrap Default: Standard card radius */
+    margin-bottom: 1.5rem; /* Bootstrap Default: Standard card margin */
+    background-color: white; /* Bootstrap Default: Standard card background */
+    /* Bootstrap Override: Minor box-shadow tweak if different from BS default */
     box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-    background-color: white;
 }
 
 .card-header {
-    padding: 0.75rem 1.25rem;
-    background-color: #f8f9fa;
-    border-bottom: 1px solid #dee2e6;
+    padding: 0.75rem 1.25rem; /* Bootstrap Default: Standard card header padding */
+    background-color: #f8f9fa; /* Bootstrap Default: Standard card header background */
+    border-bottom: 1px solid #dee2e6; /* Bootstrap Default: Standard card header border */
+    /* Bootstrap Override: Custom font-weight or background if different */
     font-weight: bold;
 }
 
 .card-body {
-    padding: 1.25rem;
+    padding: 1.25rem; /* Bootstrap Default: Standard card body padding */
 }
 
 /* Buttons */
 .btn {
-    display: inline-block;
-    font-weight: 400;
-    text-align: center;
-    white-space: nowrap;
-    vertical-align: middle;
-    user-select: none;
-    border: 1px solid transparent;
-    padding: 0.375rem 0.75rem;
-    font-size: 1rem;
-    line-height: 1.5;
-    border-radius: 0.25rem;
-    transition: all 0.15s ease-in-out;
-    cursor: pointer;
-    text-decoration: none;
+    display: inline-block; /* Bootstrap Default */
+    font-weight: 400; /* Bootstrap Default */
+    text-align: center; /* Bootstrap Default */
+    white-space: nowrap; /* Bootstrap Default */
+    vertical-align: middle; /* Bootstrap Default */
+    user-select: none; /* Bootstrap Default */
+    border: 1px solid transparent; /* Bootstrap Default */
+    padding: 0.375rem 0.75rem; /* Bootstrap Default */
+    font-size: 1rem; /* Bootstrap Default */
+    line-height: 1.5; /* Bootstrap Default */
+    border-radius: 0.25rem; /* Bootstrap Default */
+    transition: all 0.15s ease-in-out; /* Bootstrap Default */
+    cursor: pointer; /* Bootstrap Default */
+    text-decoration: none; /* Custom: Ensuring no text decoration */
 }
 
 .btn-primary {
-    color: #fff;
-    background-color: #007bff;
-    border-color: #007bff;
+    color: #fff; /* Bootstrap Default */
+    background-color: #007bff; /* Bootstrap Default */
+    border-color: #007bff; /* Bootstrap Default */
 }
 
 .btn-primary:hover {
-    background-color: #0069d9;
-    border-color: #0062cc;
+    background-color: #0069d9; /* Bootstrap Default */
+    border-color: #0062cc; /* Bootstrap Default */
 }
 
 .btn-outline-secondary {
-    color: #6c757d;
-    border-color: #6c757d;
-    background-color: transparent;
+    color: #6c757d; /* Bootstrap Default */
+    border-color: #6c757d; /* Bootstrap Default */
+    background-color: transparent; /* Bootstrap Default */
 }
 
 .btn-outline-secondary:hover {
-    color: #fff;
-    background-color: #6c757d;
-    border-color: #6c757d;
+    color: #fff; /* Bootstrap Default */
+    background-color: #6c757d; /* Bootstrap Default */
+    border-color: #6c757d; /* Bootstrap Default */
 }
 
 /* Forms */
 .form-group {
-    margin-bottom: 1rem;
+    margin-bottom: 1rem; /* Bootstrap Default */
 }
 
 .form-control {
-    display: block;
-    width: 100%;
-    padding: 0.375rem 0.75rem;
-    font-size: 1rem;
-    line-height: 1.5;
-    color: #495057;
-    background-color: #fff;
-    background-clip: padding-box;
-    border: 1px solid #ced4da;
-    border-radius: 0.25rem;
-    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    display: block; /* Bootstrap Default */
+    width: 100%; /* Bootstrap Default */
+    padding: 0.375rem 0.75rem; /* Bootstrap Default */
+    font-size: 1rem; /* Bootstrap Default */
+    line-height: 1.5; /* Bootstrap Default */
+    color: #495057; /* Bootstrap Default */
+    background-color: #fff; /* Bootstrap Default */
+    background-clip: padding-box; /* Bootstrap Default */
+    border: 1px solid #ced4da; /* Bootstrap Default */
+    border-radius: 0.25rem; /* Bootstrap Default */
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out; /* Bootstrap Default */
 }
 
 .form-control:focus {
-    border-color: #80bdff;
-    outline: 0;
-    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    border-color: #80bdff; /* Bootstrap Default */
+    outline: 0; /* Bootstrap Default */
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25); /* Bootstrap Default */
 }
 
 /* Tables */
 .table {
-    width: 100%;
-    margin-bottom: 1rem;
-    color: #212529;
-    border-collapse: collapse;
+    width: 100%; /* Bootstrap Default */
+    margin-bottom: 1rem; /* Bootstrap Default */
+    color: #212529; /* Bootstrap Default */
+    border-collapse: collapse; /* Bootstrap Default */
 }
 
 .table th,
 .table td {
-    padding: 0.75rem;
-    vertical-align: top;
-    border-top: 1px solid #dee2e6;
+    padding: 0.75rem; /* Bootstrap Default */
+    vertical-align: top; /* Bootstrap Default */
+    border-top: 1px solid #dee2e6; /* Bootstrap Default */
 }
 
 .table thead th {
-    vertical-align: bottom;
-    border-bottom: 2px solid #dee2e6;
-    background-color: #f8f9fa;
+    vertical-align: bottom; /* Bootstrap Default */
+    border-bottom: 2px solid #dee2e6; /* Bootstrap Default */
+    background-color: #f8f9fa; /* Bootstrap Default */
 }
 
 /* Alerts */
 .alert {
-    padding: 0.75rem 1.25rem;
-    margin-bottom: 1rem;
-    border: 1px solid transparent;
-    border-radius: 0.25rem;
+    padding: 0.75rem 1.25rem; /* Bootstrap Default */
+    margin-bottom: 1rem; /* Bootstrap Default */
+    border: 1px solid transparent; /* Bootstrap Default */
+    border-radius: 0.25rem; /* Bootstrap Default */
 }
 
 .alert-danger {
-    color: #721c24;
-    background-color: #f8d7da;
-    border-color: #f5c6cb;
+    color: #721c24; /* Bootstrap Default */
+    background-color: #f8d7da; /* Bootstrap Default */
+    border-color: #f5c6cb; /* Bootstrap Default */
 }
 
 /* Progress bar */
 .progress {
-    height: 1.5rem;
-    margin-bottom: 1rem;
-    overflow: hidden;
-    background-color: #e9ecef;
-    border-radius: 0.25rem;
+    height: 1.5rem; /* Custom: Larger height than BS default */
+    margin-bottom: 1rem; /* Bootstrap Default */
+    overflow: hidden; /* Bootstrap Default */
+    background-color: #e9ecef; /* Bootstrap Default */
+    border-radius: 0.25rem; /* Bootstrap Default */
 }
 
 .progress-bar {
-    height: 100%;
-    color: white;
-    text-align: center;
-    background-color: #007bff;
-    transition: width 0.6s ease;
+    height: 100%; /* Custom: Ensures it fills the custom height of .progress */
+    color: white; /* Bootstrap Default */
+    text-align: center; /* Bootstrap Default */
+    background-color: #007bff; /* Bootstrap Default */
+    transition: width 0.6s ease; /* Bootstrap Default */
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-    .container {
-        padding: 10px;
-    }
-    
-    .card-body {
-        padding: 1rem;
-    }
-}
-}
-
-/* Custom styles */
+/* Custom Application Styles */
 .file-upload-area {
     border: 2px dashed #dee2e6;
     border-radius: 0.25rem;
@@ -199,8 +191,7 @@ body {
 .preview-table {
     max-height: 300px;
     overflow-y: auto;
-}
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.5rem; /* Consolidated margin */
 }
 
 .config-section {
@@ -214,7 +205,9 @@ body {
     border-bottom: 1px solid #dee2e6;
 }
 
-/* Loading spinner */
+/* Loading spinner - .spinner-border is a Bootstrap class.
+   This reimplementation might be redundant if Bootstrap's CSS is linked.
+   If it's intended as a standalone spinner, it's fine. */
 .spinner-border {
     display: inline-block;
     width: 2rem;
@@ -228,4 +221,15 @@ body {
 
 @keyframes spinner-border {
     to { transform: rotate(360deg); }
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .container {
+        padding: 10px; /* Bootstrap Override: Custom padding for smaller screens */
+    }
+    
+    .card-body {
+        padding: 1rem; /* Bootstrap Override: Custom padding for card body on smaller screens */
+    }
 }
