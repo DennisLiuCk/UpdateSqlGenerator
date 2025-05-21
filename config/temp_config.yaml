@@ -1,0 +1,24 @@
+database:
+  name: mms
+  table: PRODUCT_IMAGES
+batch:
+  size: 10000
+input:
+  file: C:\code\UpdateSqlGenerator\uploads\Product_image_data_test.tsv
+  format: tsv
+  has_header: true
+output:
+  dir: C:\code\UpdateSqlGenerator\output
+identifiers:
+- name: ID
+  column: PRODUCT_IMAGE_ID
+  data_type: number
+  is_numeric: true
+update_columns:
+- name: FILE
+  column: FILE_NAME
+  data_type: string
+  is_numeric: false
+static_values:
+  LAST_UPDATED_BY: SYSTEM
+  LAST_UPDATED_DATE: NOW()

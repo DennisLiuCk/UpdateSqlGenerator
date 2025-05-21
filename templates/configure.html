@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- 儲存 URL 供 JavaScript 使用 -->
+<meta name="result-url" content="{{ url_for('result') }}">
+
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-cog me-2"></i>配置 SQL 生成選項</h4>
+            </div>
+            <div class="card-body">
+                <form id="config-form" action="{{ url_for('generate_sql') }}" method="POST" novalidate>
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-database me-2"></i>資料庫設定</h5>
+                            <hr class="mt-2">
+                            <div class="mb-3">
+                                <label for="db-name" class="form-label">資料庫名稱</label>
+                                <input type="text" class="form-control" id="db-name" value="mms" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="table-name" class="form-label">資料表名稱</label>
+                                <input type="text" class="form-control" id="table-name" value="PRODUCT_IMAGES" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="batch-size" class="form-label">每批次行數</label>
+                                <input type="number" class="form-control" id="batch-size" value="10000" min="1" required>
+                                <div class="form-text">設定每個 SQL 檔案包含的最大行數</div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-file-import me-2"></i>檔案設定</h5>
+                            <hr class="mt-2">
+                            <div class="mb-3">
+                                <label class="form-label">已選擇的檔案</label>
+                                <div class="form-control bg-light">
+                                    <i class="fas fa-file-alt me-2"></i>
+                                    <span id="selected-file">{{ filename }}</span>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">檔案格式</label>
+                                <div class="form-control bg-light">
+                                    {{ 'TSV (Tab 分隔)' if filename.endswith('.tsv') else 'CSV (逗號分隔)' }}
+                                </div>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="file-has-header" checked>
+                                <label class="form-check-label" for="file-has-header">
+                                    第一行是標題行
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="mb-0"><i class="fas fa-key me-2"></i>識別欄位 (WHERE 條件)</h5>
+                                <button type="button" class="btn btn-sm btn-outline-primary" id="add-identifier">
+                                    <i class="fas fa-plus me-1"></i> 新增識別欄位
+                                </button>
+                            </div>
+                            <div id="identifiers-container">
+                                <!-- 識別欄位將動態添加在這裡 -->
+                                <div class="row g-3 mb-3 align-items-end identifier-row">
+                                    <div class="col-md-4">
+                                        <input type="text" class="form-control db-column" placeholder="資料庫欄位名稱" required>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <select class="form-select file-column" required>
+                                            <option value="">-- 選擇檔案欄位 --</option>
+                                            {% for header in headers %}
+                                            <option value="{{ header }}">{{ header }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <select class="form-select data-type">
+                                            <option value="string">字串 (VARCHAR)</option>
+                                            <option value="number" selected>數字 (INT, DECIMAL)</option>
+                                            <option value="date">日期 (DATE)</option>
+                                            <option value="datetime">日期時間 (DATETIME)</option>
+                                            <option value="boolean">布林值 (BOOLEAN)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="mb-0"><i class="fas fa-edit me-2"></i>更新欄位 (SET 子句)</h5>
+                                <button type="button" class="btn btn-sm btn-outline-primary" id="add-update-column">
+                                    <i class="fas fa-plus me-1"></i> 新增更新欄位
+                                </button>
+                            </div>
+                            <div id="update-columns-container">
+                                <!-- 更新欄位將動態添加在這裡 -->
+                                <div class="row g-3 mb-3 align-items-end update-column-row">
+                                    <div class="col-md-4">
+                                        <input type="text" class="form-control db-column" placeholder="資料庫欄位名稱" required>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <select class="form-select file-column" required>
+                                            <option value="">-- 選擇檔案欄位 --</option>
+                                            {% for header in headers %}
+                                            <option value="{{ header }}">{{ header }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <select class="form-select data-type">
+                                            <option value="string" selected>字串 (VARCHAR)</option>
+                                            <option value="number">數字 (INT, DECIMAL)</option>
+                                            <option value="date">日期 (DATE)</option>
+                                            <option value="datetime">日期時間 (DATETIME)</option>
+                                            <option value="boolean">布林值 (BOOLEAN)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="mb-0"><i class="fas fa-tag me-2"></i>靜態值</h5>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" id="add-static-value">
+                                    <i class="fas fa-plus me-1"></i> 新增靜態值
+                                </button>
+                            </div>
+                            <div id="static-values-container">
+                                <!-- 靜態值將動態添加在這裡 -->
+                                <div class="row g-2 mb-3 align-items-center static-value-row">
+                                    <div class="col-5">
+                                        <input type="text" class="form-control form-control-sm field-name" placeholder="欄位名稱 (例如: LAST_UPDATED_BY)">
+                                    </div>
+                                    <div class="col-5">
+                                        <input type="text" class="form-control form-control-sm field-value" placeholder="值 (例如: SYSTEM)">
+                                    </div>
+                                    <div class="col-2 d-flex align-items-center justify-content-end">
+                                        <button type="button" class="btn btn-outline-danger btn-sm remove-btn">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="row g-2 mb-3 align-items-center static-value-row">
+                                    <div class="col-5">
+                                        <input type="text" class="form-control form-control-sm field-name" value="LAST_UPDATED_DATE">
+                                    </div>
+                                    <div class="col-5">
+                                        <input type="text" class="form-control form-control-sm field-value" value="NOW()">
+                                    </div>
+                                    <div class="col-2 d-flex align-items-center justify-content-end">
+                                        <button type="button" class="btn btn-outline-danger btn-sm remove-btn">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer d-flex justify-content-between">
+                <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i> 上一步
+                </a>
+                <button type="button" class="btn btn-primary" id="generate-btn">
+                    <i class="fas fa-magic me-1"></i> 生成 SQL
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 生成進度 Modal -->
+<div class="modal fade" id="progressModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">正在生成 SQL...</h5>
+            </div>
+            <div class="modal-body text-center">
+                <div class="spinner-border text-primary mb-3" role="status">
+                    <span class="visually-hidden">載入中...</span>
+                </div>
+                <p id="progress-message">正在處理您的請求，請稍候...</p>
+                <div class="progress">
+                    <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- JavaScript 代碼已移至 static/js/main.js -->
+{% endblock %}

@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0"><i class="fas fa-check-circle me-2"></i>SQL 生成完成</h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-success" role="alert">
+                    <h5 class="alert-heading"><i class="fas fa-check-circle me-2"></i>成功生成 SQL 檔案！</h5>
+                    <p class="mb-0">
+                        已成功生成 <strong>{{ file_count }} 個 SQL 檔案</strong>，共處理 <strong>{{ total_rows }} 筆</strong>資料。
+                        <small class="d-block text-muted mt-1">
+                            <i class="fas fa-info-circle me-1"></i> 註：檔案行數可能大於處理筆數，因為每個 SQL 語句可能包含多行。
+                        </small>
+                    </p>
+                </div>
+                
+                <div class="mb-4">
+                    <h5><i class="fas fa-database me-2"></i>資料庫資訊</h5>
+                    <hr class="mt-2">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>資料庫名稱：</strong> {{ config.db_name }}</p>
+                            <p><strong>資料表名稱：</strong> {{ config.table_name }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>批次大小：</strong> {{ config.batch_size }} 行/檔案</p>
+                            <p><strong>總共生成：</strong> {{ file_count }} 個檔案</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0"><i class="fas fa-download me-2"></i>下載 SQL 檔案</h5>
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-outline-primary" id="download-all">
+                                <i class="fas fa-file-archive me-1"></i> 下載全部 (ZIP)
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>檔案名稱</th>
+                                    <th>檔案行數</th>
+                                    <th>檔案大小</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for file in files %}
+                                <tr>
+                                    <td>{{ file.name }}</td>
+                                    <td>{{ file.rows }} 行 <small class="text-muted">({{ (file.rows / total_rows * 100)|round(1) }}%)</small></td>
+                                    <td>{{ file.size|filesizeformat }}</td>
+                                    <td>
+                                        <a href="{{ url_for('download_file', filename=file.name) }}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-download me-1"></i> 下載
+                                        </a>
+                                        <button class="btn btn-sm btn-outline-secondary view-sql" data-filename="{{ file.name }}">
+                                            <i class="fas fa-eye me-1"></i> 預覽
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <h5><i class="fas fa-info-circle me-2"></i>執行摘要</h5>
+                    <hr class="mt-2">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>開始時間：</strong> {{ summary.start_time|datetimeformat }}</p>
+                            <p><strong>結束時間：</strong> {{ summary.end_time|datetimeformat }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>總處理時間：</strong> {{ summary.duration|round(2) }} 秒</p>
+                            <p><strong>平均處理速度：</strong> {{ summary.rows_per_second|round(2) }} 行/秒</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info">
+                    <h5><i class="fas fa-lightbulb me-2"></i>使用提示</h5>
+                    <ul class="mb-0">
+                        <li>點擊「預覽」按鈕可以在瀏覽器中查看 SQL 語句</li>
+                        <li>點擊「下載」按鈕可以下載單個 SQL 檔案</li>
+                        <li>點擊「下載全部 (ZIP)」按鈕可以下載所有 SQL 檔案的壓縮包</li>
+                        <li>您可以在 <code>{{ output_dir }}</code> 目錄下找到生成的 SQL 檔案</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="card-footer text-end">
+                <a href="{{ url_for('index') }}" class="btn btn-primary">
+                    <i class="fas fa-home me-1"></i> 返回首頁
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SQL 預覽 Modal -->
+<div class="modal fade" id="sqlPreviewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">SQL 預覽 - <span id="sql-filename"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                <pre class="m-0"><code id="sql-content" class="language-sql"></code></pre>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i> 關閉
+                </button>
+                <button type="button" class="btn btn-primary" id="copy-sql">
+                    <i class="far fa-copy me-1"></i> 複製到剪貼簿
+                </button>
+                <a href="#" class="btn btn-success" id="download-single">
+                    <i class="fas fa-download me-1"></i> 下載檔案
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    pre {
+        background-color: #f8f9fa;
+        padding: 1rem;
+        border-radius: 0.25rem;
+        max-height: 60vh;
+        overflow-y: auto;
+    }
+    
+    .table-responsive {
+        max-height: 400px;
+        overflow-y: auto;
+    }
+    
+    .modal-xl {
+        max-width: 90%;
+    }
+    
+    /* 代碼高亮樣式 */
+    .token.comment,
+    .token.prolog,
+    .token.doctype,
+    .token.cdata {
+        color: #6a9955;
+    }
+    
+    .token.punctuation {
+        color: #d4d4d4;
+    }
+    
+    .token.property,
+    .token.tag,
+    .token.boolean,
+    .token.number,
+    .token.constant,
+    .token.symbol,
+    .token.deleted {
+        color: #b5cea8;
+    }
+    
+    .token.selector,
+    .token.attr-name,
+    .token.string,
+    .token.char,
+    .token.builtin,
+    .token.inserted {
+        color: #ce9178;
+    }
+    
+    .token.operator,
+    .token.entity,
+    .token.url,
+    .language-css .token.string,
+    .style .token.string {
+        color: #d4d4d4;
+    }
+    
+    .token.atrule,
+    .token.attr-value,
+    .token.keyword {
+        color: #569cd6;
+    }
+    
+    .token.function,
+    .token.class-name {
+        color: #dcdcaa;
+    }
+    
+    .token.regex,
+    .token.important,
+    .token.variable {
+        color: #d16969;
+    }
+    
+    /* 深色模式 */
+    @media (prefers-color-scheme: dark) {
+        pre {
+            background-color: #2d2d2d;
+        }
+        
+        .token.punctuation {
+            color: #d4d4d4;
+        }
+        
+        .token.keyword {
+            color: #569cd6;
+        }
+        
+        .token.string {
+            color: #ce9178;
+        }
+        
+        .token.comment {
+            color: #6a9955;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<!-- 代碼高亮庫 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-sql.min.js"></script>
+<!-- JavaScript 代碼已移至 static/js/main.js -->
+{% endblock %}

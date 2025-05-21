@@ -1,0 +1,39 @@
+# 資料庫設定
+database:
+  name: mms
+  table: PRODUCT_IMAGES
+
+# 批次處理設定
+batch:
+  size: 10000  # 每個輸出檔案的行數
+
+# 輸入檔案設定
+input:
+  file: "data/Product_image_data_test.tsv"  # 輸入檔案路徑
+  format: tsv  # 可以是 tsv 或 csv
+  has_header: true
+  
+# 識別欄位 (用於 WHERE 子句)
+identifiers:
+  - name: ID  # 欄位名稱
+    column: PRODUCT_IMAGE_ID  # 來源資料中的欄位名稱
+    is_numeric: true  # 是否為數字類型
+
+# 要更新的欄位 (用於 SET 子句)
+update_columns:
+  - name: FILE_NAME  # 資料庫欄位名稱
+    column: FILE_NAME  # 來源資料中的欄位名稱
+    is_numeric: false
+    
+  - name: FILE_PATH
+    column: FILE_PATH
+    is_numeric: false
+    
+  - name: URL_ID
+    column: URL_ID
+    is_numeric: false
+
+# 其他固定值 (會固定更新這些值)
+static_values:
+  LAST_UPDATED_BY: SYSTEM
+  LAST_UPDATED_DATE: NOW()
