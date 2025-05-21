@@ -89,6 +89,8 @@ def upload_file():
 
 @app.route('/generate_sql', methods=['POST'])
 def generate_sql():
+    app.logger.info(f"Entered /generate_sql route. Request headers: {request.headers}")
+    app.logger.info(f"Request is JSON: {request.is_json}")
     try:
         if not request.is_json:
             return jsonify({'error': 'Request must be JSON'}), 400
@@ -181,6 +183,7 @@ def generate_sql():
         shutil.rmtree(app.config['OUTPUT_FOLDER'], ignore_errors=True)
         os.makedirs(app.config['OUTPUT_FOLDER'], exist_ok=True)
         
+        app.logger.info(f"Calling process_file_to_sql with config: {json.dumps(config, indent=2, ensure_ascii=False)}")
         # 生成 SQL 並獲取處理結果
         result = process_file_to_sql(
             input_file=config['input']['file'],

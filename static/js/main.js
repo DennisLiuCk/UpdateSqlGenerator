@@ -669,6 +669,7 @@
 
     // Function to handle SQL generation and validation
     async function handleGenerateSQL() {
+        console.log('handleGenerateSQL started.');
         const generateBtn = document.getElementById('generate-btn');
         const originalBtnHTML = generateBtn.innerHTML;
         const progressModalElement = document.getElementById('progressModal');
@@ -825,6 +826,7 @@
                 static_values: static_values
             };
 
+            console.log('Preparing to send generate_sql request:', data);
             // Actual fetch call
             const response = await fetch('/generate_sql', {
                 method: 'POST',
@@ -835,11 +837,13 @@
             });
 
             if (!response.ok) {
+                console.error('Server returned an error response:', response);
                 const errorData = await response.json().catch(() => ({ message: '無法解析錯誤回應，請檢查網路連線或聯絡管理員。' }));
-                throw new Error(errorData.message || `伺服器錯誤: ${response.status}`);
+                throw new Error(errorData.message || `伺服器錯誤: ${response.status} - ${response.statusText}`);
             }
 
             const result = await response.json();
+            console.log('Received response from /generate_sql:', result);
             // Assuming the server sends back a URL to the results page or a success message
             if (result.redirect_url) {
                  // Store the result summary in sessionStorage to display on the results page
@@ -853,12 +857,14 @@
             }
 
         } catch (error) {
+            console.error('Error in handleGenerateSQL catch block:', error);
             console.error('生成 SQL 錯誤:', error); // Log the full error for debugging
             Utils.showAlert('生成 SQL 時發生錯誤: ' + error.message, 'danger');
         } finally {
             if (progressModal) progressModal.hide();
             generateBtn.disabled = false;
             generateBtn.innerHTML = originalBtnHTML;
+            console.log('handleGenerateSQL finished.');
         }
     }
 
